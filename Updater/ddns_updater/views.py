@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, Http404, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import Domain
+from .errors import RootRecordChange, RecordNotFound
 # Create your views here.
 def get_record(request, domain_name):
 

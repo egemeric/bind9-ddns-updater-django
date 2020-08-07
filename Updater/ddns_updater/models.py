@@ -2,6 +2,7 @@ import random, string, re
 from django.db import models
 from django.utils import timezone
 from django.conf import settings
+from .errors import RootRecordChange , RecordNotFound
 
 
 class Domain(models.Model):
@@ -20,21 +21,26 @@ class Domain(models.Model):
             letters_and_digits = string.ascii_letters + string.digits
             self.Domain_Secret = ''.join((random.choice(letters_and_digits) for i in range(50)))
         self.Last_Change = timezone.now()
-        self.save_config()
-        super(Domain, self).save(*args, **kwargs)
+        splited_domain=self.Domain_Name.split('.')
+        if len(splited_domain) <= 3:
+            raise RootRecordChange('RootRecord')
+        else:
+            self.save_config(splited_domain[0])
+            super(Domain, self).save(*args, **kwargs)
 
-    def save_config(self):
-        update_line=self.Domain_Name.split('.')
+    def save_config(self,splited_domain):
+        regex_query=('((' + splited_domain + ')\s+A\s+)([0-9]|[.])+([\n]|$)')
+        replaced_line=(splited_domain+'\t\t\t'+'A\t'+self.Client_Ip4 + '\n')
         bind9_file = open(settings.BIND9_FILE, 'r')
         regex_org = bind9_file.read()
-        regex = re.sub('((' + update_line[0] + ')\s+A\s+)([0-9]|[.])+',  # Find the domain record line
-                       update_line[0]+'\t\t\t'+'A\t'+self.Client_Ip4,  # replace with new ip
-                       regex_org,
-                       re.DEBUG)
-        bind9_file.close()
-        bind9_file_out = open(settings.BIND9_FILE, 'w')
-
-        if regex:
+        is_found=bool(re.search(regex_query,regex_org))
+        if is_found:
+            regex = re.sub(regex_query,  # Find the domain record line
+                           replaced_line,  # replace with new ip
+                           regex_org,
+                           re.M)
+            bind9_file.close()
+            bind9_file_out = open(settings.BIND9_FILE, 'w')
             bind9_file_out.write(regex)
             bind9_file_out.close()
             file=open(settings.BIND9_FILE+'.log','a')
@@ -44,6 +50,7 @@ class Domain(models.Model):
             file = open(settings.BIND9_FILE + '.log', 'a')
             file.write(self.Client_Ip4 + ',' + str(timezone.now().isoformat()) + ',fail\n')
             file.close()
+            raise RecordNotFound('Requested update record is not found you can add manually')
 
 
 
