@@ -25,6 +25,8 @@ class Domain(models.Model):
         return self.Domain_Name
 
     def save(self, *args, **kwargs):
+        add_to_config=kwargs.get('add_to_config', None)
+        kwargs.pop('add_to_config', None) # solve no attribute error at super(Domain, self).save(*args, **kwargs)
         if not self.Domain_Secret:
             letters_and_digits = string.ascii_letters + string.digits
             self.Domain_Secret = ''.join((random.choice(letters_and_digits) for i in range(50)))
@@ -33,10 +35,10 @@ class Domain(models.Model):
         if len(splited_domain) <= 3:
             raise RootRecordChange('RootRecord')
         else:
-            self.save_config(splited_domain[0])
             super(Domain, self).save(*args, **kwargs)
+            self.save_config(splited_domain[0], add_to_config)
 
-    def save_config(self,splited_domain):
+    def save_config(self,splited_domain, add_to_config=False):
         regex_query= ('((' + splited_domain + ')\s+)([0-9]+\s+)([A]\s+)((?:[0-9]{1,3}\.){3}[0-9]{1,3})(([\n]|$))')
         # regex_query=('((' + splited_domain + ')\s+A\s+)([0-9]|[.])+([\n]|$)')
         replaced_line=(splited_domain+'\t\t\t'+str(self.TTL_VALUE)+'\tA\t'+self.Client_Ip4 + '\n')
@@ -55,11 +57,16 @@ class Domain(models.Model):
             file=open(settings.BIND9_FILE+'.log','a')
             file.write(self.Client_Ip4  + ',' + str(timezone.now().isoformat()) + ',ok\n')
             file.close()
-        else:
+        elif not add_to_config: # adding a new record from admin panel is impossible you can only add via Post method
             file = open(settings.BIND9_FILE + '.log', 'a')
             file.write(self.Client_Ip4 + ',' + str(timezone.now().isoformat()) + ',fail\n')
             file.close()
             raise RecordNotFound(' Requested update record is not found you can add manually')
+        else:   # if add_to_config which comes from self.save is True you can add a new record to config file
+            bind9_file_out = open(settings.BIND9_FILE, 'a')
+            bind9_file_out.write(replaced_line)
+            bind9_file_out.close()
+
 
 
 
