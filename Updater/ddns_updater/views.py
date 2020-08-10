@@ -44,6 +44,5 @@ def update_record(request, domain_name):
                     dom_obj.Client_Type = request_ip_client_type
                     dom_obj.save(update_fields=['Client_Ip4', 'Client_LAN', 'Client_Type', 'Last_Change'])
                     return HttpResponse("ok",status=200)
-
-
-
+    else:
+        return HttpResponse('Http Method is not allowed', status=405)

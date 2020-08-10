@@ -6,12 +6,20 @@ from .errors import RootRecordChange , RecordNotFound
 
 
 class Domain(models.Model):
+    RECORD_TYPES = [('A','A'),('TXT','TXT'),('CNAME','CNAME')]
+    RECORD_TYPE = models.CharField(max_length = 10,
+                                   choices = RECORD_TYPES,
+                                   default = 'A',
+                                   blank = True,
+                                   )
+    TTL_VALUE = models.IntegerField(default=60, blank=True)
     Domain_Name = models.CharField(max_length=100, unique=True,)
     Client_Ip4 = models.CharField(max_length=16)
     Domain_Secret = models.CharField(max_length=50, blank=True)
     Last_Change = models.DateTimeField(blank=True, null=True)
     Client_Type = models.CharField(max_length=500, null=True, blank=True)
     Client_LAN = models.CharField(max_length=16, null=True, blank=True)
+
 
     def __str__(self):
         return self.Domain_Name
@@ -29,8 +37,9 @@ class Domain(models.Model):
             super(Domain, self).save(*args, **kwargs)
 
     def save_config(self,splited_domain):
-        regex_query=('((' + splited_domain + ')\s+A\s+)([0-9]|[.])+([\n]|$)')
-        replaced_line=(splited_domain+'\t\t\t'+'A\t'+self.Client_Ip4 + '\n')
+        regex_query= ('((' + splited_domain + ')\s+)([0-9]+\s+)([A]\s+)((?:[0-9]{1,3}\.){3}[0-9]{1,3})(([\n]|$))')
+        # regex_query=('((' + splited_domain + ')\s+A\s+)([0-9]|[.])+([\n]|$)')
+        replaced_line=(splited_domain+'\t\t\t'+str(self.TTL_VALUE)+'\tA\t'+self.Client_Ip4 + '\n')
         bind9_file = open(settings.BIND9_FILE, 'r')
         regex_org = bind9_file.read()
         is_found=bool(re.search(regex_query,regex_org))
@@ -50,7 +59,7 @@ class Domain(models.Model):
             file = open(settings.BIND9_FILE + '.log', 'a')
             file.write(self.Client_Ip4 + ',' + str(timezone.now().isoformat()) + ',fail\n')
             file.close()
-            raise RecordNotFound('Requested update record is not found you can add manually')
+            raise RecordNotFound(' Requested update record is not found you can add manually')
 
 
 
