@@ -2,7 +2,9 @@ from django.shortcuts import render
 from django.http import HttpResponse, Http404, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate
+from django.conf import settings
 from .models import Domain
+from .system import Bind9
 from .errors import RootRecordChange, RecordNotFound
 # Create your views here.
 def get_record(request, domain_name):
@@ -44,6 +46,8 @@ def update_record(request, domain_name):
                     dom_obj.Client_LAN = request_ip_local
                     dom_obj.Client_Type = request_ip_client_type
                     dom_obj.save(update_fields=['Client_Ip4', 'Client_LAN', 'Client_Type', 'Last_Change'])
+                    if not settings.DEBUG:
+                        print(Bind9.reload_config())
                     return HttpResponse("ok",status=200)
     else:
         return HttpResponse('Http Method is not allowed', status=405)
