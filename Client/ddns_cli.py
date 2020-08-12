@@ -69,8 +69,8 @@ class UpdaterClient(Domain):
 if __name__ == '__main__':
     Updater_Server_Url = "http://127.0.0.1"
     Updater_Server_Port = 8000
-    Updater_Server_User = "egemeric"
-    Updater_Server_Password = "emerdogan"
+    Updater_Server_User = "enter the username"
+    Updater_Server_Password = "password "
     Domain_Name = "home.egemeric.gen.tr"
 
     cli = UpdaterClient(
