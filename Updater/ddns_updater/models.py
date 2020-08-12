@@ -32,7 +32,7 @@ class Domain(models.Model):
             self.Domain_Secret = ''.join((random.choice(letters_and_digits) for i in range(50)))
         self.Last_Change = timezone.now()
         splited_domain=self.Domain_Name.split('.')
-        if len(splited_domain) <= 3:
+        if len(splited_domain) <= len(settings.ROOT_DOMAIN.split('.')):
             raise RootRecordChange('RootRecord')
         else:
             super(Domain, self).save(*args, **kwargs)

@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 SECRET_KEY = 'gy)1ylza&1jzyzm#1emelmup-xdq^z_nf5#=29u!h8h)e_mqal'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['egemeric2.ddns.net',
                  '127.0.0.1',
@@ -32,6 +32,7 @@ ALLOWED_HOSTS = ['egemeric2.ddns.net',
                  ]
 
 BIND9_FILE = '/home/egemeric/dns.conf'
+ROOT_DOMAIN = 'new.gen.tr'
 
 # Application definition
 

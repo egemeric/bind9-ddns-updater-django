@@ -27,20 +27,20 @@ def update_record(request, domain_name):
     if request.method == 'POST':
         secret_key=request.POST.get('secret', False)
         if not secret_key:
-            return HttpResponse('Not authorized', status=401)
+            return JsonResponse({'status': 'restriction'}, status=401)
         else:
             try:
                 dom_obj=Domain.objects.get(Domain_Name=domain_name)
             except Domain.DoesNotExist:
                 raise Http404("domain is not found")
             if dom_obj.Domain_Secret != secret_key:
-                return HttpResponse('Not authorized', status=401)
+                return JsonResponse({'status': 'restriction'}, status=401)
             else:
                 request_ip = request.META.get('HTTP_X_FORWARDED_FOR', '') or request.META.get('REMOTE_ADDR')
                 request_ip_local = request.POST.get('Client_LAN', None)
                 request_ip_client_type= request.POST.get('Client_Type', None)
                 if dom_obj.Client_Ip4 == request_ip:
-                    return HttpResponse("No changes",status=204)
+                    return JsonResponse({'status': 'nochange'},status=204)
                 else:
                     dom_obj.Client_Ip4 = request_ip
                     dom_obj.Client_LAN = request_ip_local
@@ -49,7 +49,7 @@ def update_record(request, domain_name):
                     if not settings.DEBUG:
                         reload_out = reload_config()
                         print(reload_out)
-                    return HttpResponse("ok", status=200)
+                    return JsonResponse({'status': 'ok'}, status=200)
     else:
         return HttpResponse('Http Method is not allowed', status=405)
 
@@ -78,5 +78,28 @@ def add_domain(request, domain_name):
             return HttpResponse('Not authorized', status=401)
     else:
         return HttpResponse('Bad request', status=400)
+
+
+@csrf_exempt
+def get_secret(request, domain_name):
+    if request.method == 'POST':
+        usr = request.POST.get('username', None)
+        pwd = request.POST.get('password', None)
+        if not (usr and pwd):
+            return HttpResponse('Bad request', status=400)
+        user = authenticate(username=usr, password=pwd)
+        if user is not None:
+            try:
+                dom_obj = Domain.objects.get(Domain_Name=domain_name)
+            except Domain.DoesNotExist:
+                raise Http404
+            return JsonResponse({'secret': dom_obj.Domain_Secret}, status=200)
+        else:
+            return JsonResponse({'secret': 'None'}, status=401)
+    else:
+        return HttpResponse('bad request', status=400)
+
+
+
 
 
