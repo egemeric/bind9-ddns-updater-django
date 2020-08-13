@@ -59,6 +59,7 @@ ROOT_DOMAIN = 'example.com'
 Also you have to add your subdomain record under the bind9 config file like this
 ```sh
 updatedsubdomainname			60	A	192.168.1.1
+```
 
 Also you can disable DEBUG mode under settings.py
 ```python
