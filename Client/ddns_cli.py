@@ -1,5 +1,7 @@
 import requests
 import time
+import socket
+
 
 class Domain:
     def __init__(self, domain_name, domain_key=None, ttl_value=None, record_type=None):
@@ -45,7 +47,7 @@ class UpdaterClient(Domain):
         if self.domain_key is not None:
             data={
                 'secret': self.domain_key,
-                'Client_LAN': '192.168.0.0',
+                'Client_LAN': get_lan_ip(),
                 'Client_Type': "egemeric's ddns client,EDDC,1.0",
             }
             self.post(url_param='update',data=data)
@@ -66,13 +68,20 @@ class UpdaterClient(Domain):
             raise Exception('your username or password is not matched')
 
 
+def get_lan_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    s.connect(('<broadcast>', 0))
+    return s.getsockname()[0]
+
+
 if __name__ == '__main__':
     Updater_Server_Url = "http://127.0.0.1"
     Updater_Server_Port = 8000
-    Updater_Server_User = "enter the username"
-    Updater_Server_Password = "password "
+    Updater_Server_User = "test"
+    Updater_Server_Password = "test1234."
     Domain_Name = "home.egemeric.gen.tr"
-
+    print(get_lan_ip())
     cli = UpdaterClient(
                         server_url=Updater_Server_Url,
                         server_port=Updater_Server_Port,
@@ -80,5 +89,6 @@ if __name__ == '__main__':
                         password=Updater_Server_Password,
                         domain_name=Domain_Name,
                         )
-
     cli.update_ip()
+
+

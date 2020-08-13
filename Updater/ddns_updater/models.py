@@ -19,7 +19,7 @@ class Domain(models.Model):
     Last_Change = models.DateTimeField(blank=True, null=True)
     Client_Type = models.CharField(max_length=500, null=True, blank=True)
     Client_LAN = models.CharField(max_length=16, null=True, blank=True)
-
+    Client_LAST_ACCESS = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return self.Domain_Name

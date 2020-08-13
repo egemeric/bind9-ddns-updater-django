@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, Http404, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate
+from django.utils import timezone
 from django.conf import settings
 from .models import Domain
 from .system import reload_config
@@ -18,6 +19,7 @@ def get_record(request, domain_name):
                      'last_change': dom_obj.Last_Change.isoformat(),
                      'Client_LAN': dom_obj.Client_LAN,
                      'Client_Type': dom_obj.Client_Type,
+                     'Client_last_access': dom_obj.Client_LAST_ACCESS.isoformat(),
                      }
     return JsonResponse(json_response, status=200)
 
@@ -40,7 +42,9 @@ def update_record(request, domain_name):
                 request_ip_local = request.POST.get('Client_LAN', None)
                 request_ip_client_type= request.POST.get('Client_Type', None)
                 if dom_obj.Client_Ip4 == request_ip:
-                    return JsonResponse({'status': 'nochange'},status=204)
+                    dom_obj.Client_LAST_ACCESS = timezone.now()
+                    dom_obj.save(update_fields=['Client_LAST_ACCESS'])
+                    return JsonResponse({'status': 'nochange'}, status=204)
                 else:
                     dom_obj.Client_Ip4 = request_ip
                     dom_obj.Client_LAN = request_ip_local

@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 SECRET_KEY = 'gy)1ylza&1jzyzm#1emelmup-xdq^z_nf5#=29u!h8h)e_mqal'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['egemeric2.ddns.net',
                  '127.0.0.1',
