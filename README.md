@@ -74,8 +74,8 @@ python manage.py createsuperuser
 python manage.py runserver 0.0.0.0:8000
 ```
 ## 9-) Client
-->you can use my client under Client directory with name ddns_client.py.
-->you will see the variables under of the script and edit them personally.
-->you can use client via crontab to make update request 
+->you can use my client under Client directory with name ddns_client.py. 
+->you will see the variables under of the script and edit them by own. 
+->you can use client via crontab to make update request  
 
 
